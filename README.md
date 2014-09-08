@@ -17,7 +17,7 @@ To load a single block of content into an element and update the URL, push() can
 The response for that call would be expected in this format:
 
     {
-        "title": "New Window Title",
+        "title": "Optional Replacement Window Title",
         "content": "<p>New #bar content</p>"
     }
 
@@ -63,7 +63,7 @@ The fragments are then mapped automatically to the DOM based on the `fragments` 
 
 ### POST
 
-To avoid any overly complex argument swapping for POST requests, an extra method is defined for sending the request as POST:
+To avoid any overly complex argument swapping for POST requests, an extra method is defined for sending the request as a POST:
 
     $.postPush('/foo', {...}, '#bar');
 
@@ -94,6 +94,26 @@ Here are some examples with various argument swapping:
     });
 
 Note that the callback is converted to a string and stored within the event `state` data, and then re-called every time the corresponding `popstate` event is fired. That means no native functions can be passed directly as the callback, and for best performance it's better to delegate any event listeners to a parent static element.
+
+
+
+### Custom Data
+
+Any amount of extra, custom data can be passed back wihin the response and accessed within your callback. If you don't want to render any HTML on the server at all, you can pass back some custom data and handle it manually:
+
+    $.push('/foo', function(response) {
+        console.log(response.myCustomData);
+    });
+
+<!-- -->
+
+    {
+        "myCustomData": {
+            ...
+        }
+    }
+
+The name `myCustomData` is not important, it's just an example.
 
 
 

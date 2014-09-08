@@ -78,7 +78,7 @@
         var handleResponse = function(xhr) {
 
             if (!xhr.responseJSON) {
-                throw new Error('Response must be JSON');
+                throw new Error('Response must be valid JSON');
             }
 
             var response = xhr.responseJSON;
@@ -118,18 +118,24 @@
 
     function renderState(state)
     {
-        window.document.title = state.response.title;
+        // Render new title
+        if (state.response.title) {
+            window.document.title = state.response.title;
+        }
 
+        // Render single block of HTML
         if (state.target && state.response.content) {
             $(state.target).html(state.response.content);
         }
 
+        // Render fragments
         if (state.response.fragments) {
             $.each(state.response.fragments, function(id, content) {
                 $('#' + id).html(content);
             });
         }
 
+        // Call user callback
         if (state.callback) {
             var callback = Function('return ' + state.callback)();
             callback(state.response);

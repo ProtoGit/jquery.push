@@ -77,28 +77,40 @@
     {
         var handleResponse = function(xhr) {
 
-            if (!xhr.responseJSON) {
-                throw new Error('Response must be valid JSON');
+            if (!xhr.responseJSON && !target) {
+                throw new Error('Response must be valid JSON, or HTML with an output selector');
             }
 
-            var response = xhr.responseJSON;
-            if (!response.title && (!response.content || !response.fragments)) {
-                throw new Error('Invalid JSON response');
-            }
+            var stateTitle = window.document.title;
 
-            var state = {
-                response: response
-            };
+            if (xhr.responseJSON) {
 
-            if (target) {
-                state.target = target;
+                var state = {
+                    response: xhr.responseJSON
+                };
+
+                if (target) {
+                    state.target = target;
+                }
+
+                if (xhr.responseJSON.title) {
+                    stateTitle = xhr.responseJSON.title;
+                }
+
+            } else {
+
+                var state = {
+                    target: target,
+                    response: {content: xhr.responseText}
+                };
+
             }
 
             if (typeof callback == 'function') {
                 state.callback = callback.toString();
             }
 
-            window.history.pushState(state, response.title, uri);
+            window.history.pushState(state, stateTitle, uri);
             renderState(state);
         };
 
@@ -143,6 +155,7 @@
     }
 
     $(window).on('popstate', function(event) {
+        console.log(event);
         if (event.originalEvent.state) {
             renderState(event.originalEvent.state);
         }

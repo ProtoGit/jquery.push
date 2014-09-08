@@ -61,6 +61,18 @@ The fragments are then mapped automatically to the DOM based on the `fragments` 
 
 
 
+### HTML Only
+
+When returning a structured JSON response from the server isn't possible, you can just return a string of HTML along with an output selector. For example:
+
+    $.push('/foo', '#bar');
+
+Then the response could be simply:
+
+    <p>New #bar content</p>
+
+
+
 ### POST
 
 To avoid any overly complex argument swapping for POST requests, an extra method is defined for sending the request as a POST:

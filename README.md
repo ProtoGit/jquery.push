@@ -21,7 +21,7 @@ The response for that call would be expected in this format:
         "content": "<p>New #bar content</p>"
     }
 
-    <!-- -->
+<!-- -->
 
     <div id="bar">
         <!-- response.content would be loaded here -->
@@ -49,7 +49,7 @@ The fragments are then mapped automatically to the DOM based on the `fragments` 
         }
     }
 
-    <!-- -->
+<!-- -->
 
     <div id="bar">
         <!-- response.fragments.bar would be loaded here -->

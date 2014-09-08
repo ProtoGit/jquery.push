@@ -21,15 +21,15 @@ The response for that call would be expected in this format:
         "content": "<p>New #bar content</p>"
     }
 
-<!-- -->
+With the existing HTML within the page expected as:
 
     <div id="bar">
         <!-- response.content would be loaded here -->
     </div>
 
-Due to the limitations with what can be stored within the `popstate` event `state` data, and the inability to retrieve the original selector from within a jQuery plug-in, we need to pass a string selector to the plug-in, instead of a jQuery object, so that we can reference the element later.
+Due to the limitations with what can be stored within the `popstate` event `state` property's data, and the inability to retrieve the original selector from within a jQuery plug-in, we need to pass a string selector to the plug-in, instead of a jQuery object, so that we can reference the element later.
 
-If push() is passed an `<a>` or `<form>` native element (or jQuery object) instead of a URI, the `.href` or `.action` properties, respectively, are used as the URI.
+If push() is passed an `<a>` or `<form>` native element (or jQuery object wrapping a native element) instead of a string URI, the `.href` or `.action` properties are, respectively used as the URI.
 
 
 
@@ -73,7 +73,9 @@ This function works exactly as push(), except that second argument must always b
 
 ### Callbacks
 
-For any DOM manipulation that can *only* be performed once the content has been loaded into the DOM, a callback can be provided to push(), that is called with the original JSON HTTP response. Here are some examples with various argument swapping:
+For any DOM manipulation that can *only* be performed once the content has been loaded into the DOM, a callback can be provided to push(), that is called with the original JSON HTTP response passed as the only argument.
+
+Here are some examples with various argument swapping:
 
     $.push('/foo', function(response) {
         // ...
@@ -83,15 +85,15 @@ For any DOM manipulation that can *only* be performed once the content has been 
         // ...
     });
 
-    $.postPush('/foo', {}, function() {
+    $.postPush('/foo', {}, function(response) {
         // ...
     });
 
-    $.postPush('/foo', {}, '#bar', function() {
+    $.postPush('/foo', {}, '#bar', function(response) {
         // ...
     });
 
-Note that the callback is serialised and stored within the `state` data, and then re-called every time the corresponding `popstate` event is fired. For best performance, it's better to delegate any event listeners to a parent static elem
+Note that the callback is converted to a string and stored within the event `state` data, and then re-called every time the corresponding `popstate` event is fired. That means no native functions can be passed directly as the callback, and for best performance it's better to delegate any event listeners to a parent static element.
 
 
 

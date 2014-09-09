@@ -14,17 +14,14 @@
             throw new Error('Invalid push() arguments');
         }
 
-        // URI only
         if (arguments.length === 1) {
             return pushState(resolveUri(arguments[0]));
         }
 
-        // URI and callback only
         if (arguments.length === 2 && typeof arguments[1] == 'function') {
             return pushState(resolveUri(arguments[0]), null, null, arguments[1]);
         }
 
-        // URI with optional output selector and callback
         return pushState(resolveUri(arguments[0]), null, arguments[1], arguments[2]);
     };
 
@@ -34,28 +31,23 @@
             throw new Error('Invalid postPush() arguments');
         }
 
-        // URI and post data only
         if (arguments.length === 2) {
             return pushState(resolveUri(arguments[0]), arguments[1]);
         }
 
-        // URI, post data and callback only
         if (arguments.length === 3 && typeof arguments[2] == 'function') {
             return pushState(resolveUri(arguments[0]), arguments[1], null, arguments[2]);
         }
 
-        // URI and post data with optional output selector and callback
         return pushState(resolveUri(arguments[0]), arguments[1], arguments[2], arguments[3]);
     };
 
     function resolveUri(unknown)
     {
-        // Check for string URI
         if (typeof unknown == 'string') {
             return unknown;
         }
 
-        // Check for native or jQuery elements
         if (typeof unknown == 'object') {
             var element = (unknown.get)
                 ? unknown.get(0)
@@ -75,89 +67,89 @@
 
     function pushState(uri, postData, target, callback)
     {
-        var handleResponse = function(xhr) {
-
-            if (!xhr.responseJSON && !target) {
-                throw new Error('Response must be valid JSON, or HTML with an output selector');
-            }
-
-            var stateTitle = window.document.title;
-
-            if (xhr.responseJSON) {
-
-                var state = {
-                    response: xhr.responseJSON
-                };
-
-                if (target) {
-                    state.target = target;
-                }
-
-                if (xhr.responseJSON.title) {
-                    stateTitle = xhr.responseJSON.title;
-                }
-
-            } else {
-
-                var state = {
-                    target: target,
-                    response: {content: xhr.responseText}
-                };
-
-            }
-
-            if (typeof callback == 'function') {
-                state.callback = callback.toString();
-            }
-
-            window.history.pushState(state, stateTitle, uri);
-            renderState(state);
-        };
-
-        var options = {
-            url: uri,
-            dataType: 'json',
-            complete: handleResponse
-        };
+        var state = {uri: uri};
 
         if (postData) {
+            state.postData = postData;
+        }
+
+        if (typeof target == 'string') {
+            state.target = target;
+        }
+
+        if (typeof callback == 'function') {
+            state.callback = callback.toString();
+        }
+
+        window.history.pushState(state, '', uri);
+        handleState(state, false);
+    }
+
+    function handleState(state, authentic)
+    {
+        var options = {
+            url: state.uri,
+            complete: function(xhr) {
+                handleResponse(xhr, state, authentic);
+            }
+        };
+
+        if (state.postData) {
             options.type = 'POST';
-            options.data = postData;
+            options.data = state.postData;
         }
 
         $.ajax(options);
     }
 
-    function renderState(state)
+    function handleResponse(xhr, state, authentic)
     {
-        // Render new title
-        if (state.response.title) {
-            window.document.title = state.response.title;
+        if (!xhr.responseJSON && !state.target) {
+            throw new Error(
+                'Response must be valid JSON, or HTML with a predefined output selector'
+            );
         }
 
-        // Render single block of HTML
-        if (state.target && state.response.content) {
-            $(state.target).html(state.response.content);
+        if (xhr.responseJSON) {
+
+            if (xhr.responseJSON.title) {
+                window.document.title = xhr.responseJSON.title;
+            }
+
+            if (state.target && xhr.responseJSON.content) {
+                $(state.target).html(xhr.responseJSON.content);
+            }
+
+            if (xhr.responseJSON.fragments) {
+                $.each(xhr.responseJSON.fragments, function(id, content) {
+                    var fragment = $('#' + id);
+                    if (fragment.length) {
+                        fragment.html(content);
+                    }
+                });
+            }
+
+        } else {
+
+            if (state.target && xhr.responseText) {
+                $(state.target).html(xhr.responseText);
+            }
+
         }
 
-        // Render fragments
-        if (state.response.fragments) {
-            $.each(state.response.fragments, function(id, content) {
-                $('#' + id).html(content);
-            });
-        }
-
-        // Call user callback
         if (state.callback) {
             var callback = Function('return ' + state.callback)();
-            callback(state.response);
+            if (xhr.responseJSON) {
+                callback(xhr.responseJSON, authentic);
+            } else {
+                callback(xhr.responseText, authentic);
+            }
         }
     }
 
     $(window).on('popstate', function(event) {
-        console.log(event);
         if (event.originalEvent.state) {
-            renderState(event.originalEvent.state);
+            handleState(event.originalEvent.state, true);
         }
     });
 

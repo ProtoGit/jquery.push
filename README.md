@@ -87,7 +87,7 @@ This function works exactly as push(), except that second argument must always b
 
 ### Callbacks
 
-For any DOM manipulation that can *only* be performed once the content has been loaded into the DOM, a callback can be provided to push(), that is called with the original JSON HTTP response passed as the only argument.
+For any DOM manipulation that can *only* be performed once the content has been loaded into the DOM, a callback can be provided to push(), that is called with the HTTP response and a boolean `authnetic` flag, to indicate if the callback was triggered 'authentically' from the native window event.
 
 Here are some examples with various argument swapping:
 
@@ -107,7 +107,7 @@ Here are some examples with various argument swapping:
         // ...
     });
 
-Note that the callback is converted to a string and stored within the event `state` data, and then re-called every time the corresponding `popstate` event is fired. That means no native functions can be passed directly as the callback, and for best performance it's better to delegate any event listeners to a parent static element.
+Note that the callback is converted to a string and stored within the event `state` data, and then re-called every time the corresponding `popstate` event is fired. That means no native functions can be passed directly *as* the callback, and the callback will be in the global scope. For best performance it's better to delegate any event listeners to a parent static element too.
 
 
 

@@ -71,6 +71,8 @@ Then the response could be simply:
 
     <p>New #bar content</p>
 
+Obviously though the downside here is that we can't update the window title.
+
 
 
 ### POST

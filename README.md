@@ -71,7 +71,7 @@ Then the response could be simply:
 
     <p>New #bar content</p>
 
-Obviously though the downside here is that we can't update the window title.
+Obviously though the downside here is that we can't update the window title. I had to use this for Roann, as the CMS doesn't make pushState() support easy.
 
 
 
